@@ -14,7 +14,7 @@ model = Sequential([
 ])
 
 model.build(input_shape=(None, 500))
-model.load_weights("simple_rnn_imdb.weights.h5")
+model.load_weights("simple_rnn_imdb.h5")
 
 def preprocess_text(text):
     words = text.lower().split()
