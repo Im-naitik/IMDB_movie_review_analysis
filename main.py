@@ -2,15 +2,20 @@ import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.datasets import imdb
 from tensorflow.keras.preprocessing import sequence
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
 
-# Load IMDB word index
 word_index = imdb.get_word_index()
 
-# Load model
-model = load_model("simple_rnn_imdb.keras", compile=False)
+model = Sequential([
+    Embedding(input_dim=10000, output_dim=128, input_length=500),
+    SimpleRNN(128),
+    Dense(1, activation="sigmoid")
+])
 
-# Preprocess input text
+model.build(input_shape=(None, 500))
+model.load_weights("simple_rnn_imdb.weights.h5")
+
 def preprocess_text(text):
     words = text.lower().split()
     encoded_review = [word_index.get(word, 2) + 3 for word in words]
@@ -22,7 +27,6 @@ def preprocess_text(text):
     )
     return padded_review
 
-# Streamlit UI
 st.title("IMDB Movie Review Analysis")
 st.write("Enter a movie review to classify it as Positive or Negative.")
 
@@ -33,10 +37,9 @@ if st.button("Classify"):
         st.warning("Please enter a movie review.")
     else:
         preprocessed_input = preprocess_text(user_input)
+        prediction = model.predict(preprocessed_input, verbose=0)
 
-        prediction = model.predict(preprocessed_input)
         score = float(prediction[0][0])
-
         sentiment = "Positive" if score > 0.5 else "Negative"
 
         st.subheader(f"Sentiment: {sentiment}")
